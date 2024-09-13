@@ -1,0 +1,105 @@
+//녹색버튼(운전모드)
+btn1_edge(CLK:=btn1);
+//빨간버튼(중지모드)
+btn2_edge(CLK:=btn2);
+
+//켜짐상태가 유지되는 시간
+on_timer(IN:=on_timer_sw, PT:=on_t);
+//꺼짐상태가 유지되는 시간
+off_timer(IN:=off_timer_sw, PT:=off_t);
+
+//webOS에서 시간을 입력받기 위한 변수
+on_t := UINT_TO_DWORD(IN:=tcp_on_t * 1000);
+off_t := UINT_TO_DWORD(IN:=tcp_off_t * 1000);
+
+lamp_blink1(IN:=lamp_blink1_sw, PT:=T#100MS);
+lamp_blink2(IN:=lamp_blink2_sw, PT:=T#100MS);
+
+//FEnet modbus mapping
+//읽기코일 : 필요없음
+//쓰기코일(%QX0.0.0~)
+//램프(Coil:0), 펌프(Coil:1), 식물조명(Coil:2), 환기팬(Coil:3)
+//쓰기 레지스터(%M0~)
+//%MW0 ; 1이면 ON명령, 2면 OFF명령
+//%MW1 : 켜짐유지시간,
+//%MW2 : 끄기유지시간
+
+
+IF level_blocking = 1 AND old_level_blicking = 0 THEN
+	//블록킹
+	lamp := TRUE;
+	lamp_blink1_sw := TRUE;
+	//펌프 자동화 강제종료
+	lamp := FALSE; //램프 끄기
+	relay1 := FALSE; //펌프 끄기
+	on_timer_sw := FALSE; //온타이머 종료
+	off_timer_sw := FALSE; //오프타이머 종료
+ELSIF level_blocking = 0 AND old_level_blicking = 1 THEN
+	//릴리즈
+	lamp := FALSE;
+	lamp_blink1_sw := FALSE;
+	lamp_blink2_sw := FALSE;
+END_IF;
+
+old_level_blicking := level_blocking;
+
+IF lamp_blink1.Q THEN
+	lamp := FALSE; //램프 OFF
+	lamp_blink1_sw := FALSE; //온타이머 종료
+	lamp_blink2_sw := TRUE; //오프타이머 시작
+END_IF;
+
+//오프타이머가 만료되었다면 온타이머가 작동됨
+IF lamp_blink2.Q THEN
+	lamp := TRUE; //펌프 ON
+	lamp_blink1_sw := TRUE; //온타이머 시작
+	lamp_blink2_sw := FALSE; //오프타이머 종료
+END_IF;
+
+
+IF tcp_run = 1 THEN
+	//modbus tcp로 ON명령 수신함
+	lamp := TRUE; //파일럿램프 켜짐
+	relay1 := TRUE; //일단 펌프 작동
+	on_timer_sw := TRUE; //켜짐 타이머 시작
+	tcp_run := 0; //원격 ON명령 릴리즈	
+ELSIF tcp_run = 2 THEN
+	//modbus tcp로 OFF명령 수신함
+	lamp := FALSE; //파일럿램프 꺼짐
+	relay1 := FALSE; //펌프가 켜짐이든 꺼짐이든 무조건 OFF
+	on_timer_sw := FALSE; //온타이머 릴리즈
+	off_timer_sw := FALSE; //오타이머 릴리즈
+	tcp_run := 0; //원격 OFF명령 릴리즈
+END_IF;
+
+//만약 운전모드 버튼이 눌려진다면
+IF btn1_edge.Q THEN
+	IF level_blocking = 0 THEN
+		lamp := TRUE; //램프 켜기
+		relay1 := TRUE; //릴레이 켜기
+		on_timer_sw := TRUE; //온타이머 시작
+	END_IF;
+END_IF;
+
+//만약 중지모드 버튼이 눌려진다면
+IF btn2_edge.Q THEN
+	lamp := FALSE; //램프 끄기
+	relay1 := FALSE; //펌프 끄기
+	on_timer_sw := FALSE; //온타이머 종료
+	off_timer_sw := FALSE; //오프타이머 종료
+END_IF;
+
+//온타이머가 만료되었다면 오프타이머가 작동됨
+//서로가 서로를 트리거 함(루프)
+IF on_timer.Q THEN
+	relay1 := FALSE; //램프 OFF
+	on_timer_sw := FALSE; //온타이머 종료
+	off_timer_sw := TRUE; //오프타이머 시작
+END_IF;
+
+//오프타이머가 만료되었다면 온타이머가 작동됨
+IF off_timer.Q THEN
+	relay1 := TRUE; //펌프 ON
+	on_timer_sw := TRUE; //온타이머 시작
+	off_timer_sw := FALSE; //오프타이머 종료
+END_IF;
