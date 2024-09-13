@@ -1,0 +1,9 @@
+{
+  "id": "com.nockanda3.app.service",
+  "description": "NOCKANDA Service",
+  "services": [
+    {
+      "name": "com.nockanda3.app.service"
+    }
+  ]
+}

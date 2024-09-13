@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>녹칸다의 스마트팜</title>
+    <link rel="stylesheet" href="styles.css">
+<script src="webOSTVjs-1.2.10/webOSTV.js" charset="utf-8"></script>
+<script src="webOSTVjs-1.2.10/webOSTV-dev.js" charset="utf-8"></script>
+<script>
+var old_isconnected = [false,false,false];
+var old_pump_state = false;
+var old_fan_state = false;
+var old_light_state = false;
+let timer_id;
+let timer_id2;
+var cnt = 0;
+const addresses = ['192.168.0.101', '192.168.0.102', '192.168.0.103'];
+
+var default_bridge = new WebOSServiceBridge();
+var connection_bridge = new WebOSServiceBridge();
+var dev0_rcoil_bridge = new WebOSServiceBridge();
+var dev0_wcoil_bridge = new WebOSServiceBridge();
+var dev0_rreg_bridge = new WebOSServiceBridge();
+var dev0_wreg_bridge = new WebOSServiceBridge();
+var dev1_rreg_bridge = new WebOSServiceBridge();
+var dev2_rreg_bridge = new WebOSServiceBridge();
+var sound_bridge = new WebOSServiceBridge();
+
+function connect() {
+        play_sound();
+       //타이머초기화
+        const url = 'luna://com.nockanda3.app.service/reconnect';
+        const params = {};
+        default_bridge.onservicecallback = (msg) => {
+            //console.log(msg);
+            //let res = JSON.parse(msg);
+            //document.getElementById("txt_msg").innerHTML = res.Response;
+        };
+
+        default_bridge.call(url, JSON.stringify(params));
+}  
+
+function close_socket(mynum) {
+        const url = 'luna://com.nockanda3.app.service/close_socket';
+        const params = {num:mynum};
+        default_bridge.onservicecallback = (msg) => {
+        };
+        default_bridge.call(url, JSON.stringify(params));
+}  
+function isconnected() {
+        const url = 'luna://com.nockanda3.app.service/isconnected';
+        const params = {};
+        connection_bridge.onservicecallback = (msg) => {
+            //console.log(msg);
+            let res = JSON.parse(msg);
+            //document.getElementById("state").value= res.message;
+            if(res.message[0]){
+                document.getElementById("device0_state").value = "연결됨";
+            }else{
+                document.getElementById("device0_state").value = "연결안됨";
+            }
+            if(res.message[1]){
+                document.getElementById("device1_state").value = "연결됨";
+            }else{
+                document.getElementById("device1_state").value = "연결안됨";
+            }
+            if(res.message[2]){
+                document.getElementById("device2_state").value = "연결됨";
+            }else{
+                document.getElementById("device2_state").value = "연결안됨";
+            }
+
+            for(var i = 0;i<3;i++){
+               if(res.message[i] == false && old_isconnected[i] == true){
+                  //종료감지
+                  callToast(addresses[i] + "장치와 접속이 끊어졌습니다!");
+                  close_socket(i);
+               }
+               old_isconnected[i] = res.message[i];
+            }
+        };
+
+        connection_bridge.call(url, JSON.stringify(params));
+}   
+function wrtie_coil(coil_num, coil_state) {
+        play_sound();
+        const url = 'luna://com.nockanda3.app.service/wrtie_coil';
+        const params = {num:coil_num,state:coil_state};
+        dev0_wcoil_bridge.onservicecallback = (msg) => {
+        };
+        dev0_wcoil_bridge.call(url, JSON.stringify(params));
+}   
+function task_run() {
+        play_sound();
+        const url = 'luna://com.nockanda3.app.service/task_run';
+        const params = {};
+        dev0_wreg_bridge.onservicecallback = (msg) => {
+        };
+        dev0_wreg_bridge.call(url, JSON.stringify(params));
+}   
+function task_stop() {
+        play_sound();
+        const url = 'luna://com.nockanda3.app.service/task_stop';
+        const params = {};
+        dev0_wreg_bridge.onservicecallback = (msg) => {
+        };
+        dev0_wreg_bridge.call(url, JSON.stringify(params));
+}   
+function getCurrentFormattedTime() {
+    const now = new Date();
+
+    // 날짜 구성
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const year = now.getFullYear();
+
+    // 시간 구성
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()+5).padStart(2, '0');
+
+    // 최종 형식
+    const formattedTime = `${month}/${day}/${year} ${hours}:${minutes}:${seconds}`;
+    return formattedTime;
+}
+function light_control() {
+        play_sound();
+        const url = 'luna://com.nockanda3.app.service/light_control';
+        const params = {delay:document.getElementById("light-set-value").value*1000};
+        default_bridge.onservicecallback = (msg) => {
+        };
+
+        default_bridge.call(url, JSON.stringify(params));
+}
+function callToast(mymsg) {
+        const url = 'luna://com.nockanda3.app.service/toast';
+        const params = {msg:mymsg};
+        default_bridge.onservicecallback = (msg) => {
+            //console.log(msg);
+            //let res = JSON.parse(msg);
+            //document.getElementById("txt_msg").innerHTML = res.Response;
+        };
+
+        default_bridge.call(url, JSON.stringify(params));
+}
+function set_on_t() {
+        play_sound();
+        const url = 'luna://com.nockanda3.app.service/set_on_time';
+        var mytime = document.getElementById("pump-on-set").value*1;
+        const params = {t:mytime};
+        dev0_wreg_bridge.onservicecallback = (msg) => {
+            //console.log(msg);
+            //let res = JSON.parse(msg);
+                    
+        };
+
+        dev0_wreg_bridge.call(url, JSON.stringify(params));
+}
+function set_off_t() {
+        play_sound();
+        const url = 'luna://com.nockanda3.app.service/set_off_time';
+        var mytime = document.getElementById("pump-off-set").value*1;
+        const params = {t:mytime};
+        dev0_wreg_bridge.onservicecallback = (msg) => {
+            //console.log(msg);
+            //let res = JSON.parse(msg);
+        };
+
+        dev0_wreg_bridge.call(url, JSON.stringify(params));
+}
+function device0_register() {
+        const url = 'luna://com.nockanda3.app.service/read_register0';
+        const params = {};
+        dev0_rreg_bridge.onservicecallback = (msg) => {
+            //console.log(msg);
+            var data = JSON.parse(msg);
+            var reg_data = data.message.response._body._values;
+            document.getElementById("pump-on-time").value = reg_data[0];            
+            document.getElementById("pump-off-time").value = reg_data[1];            
+        };
+
+        dev0_rreg_bridge.call(url, JSON.stringify(params));
+}
+
+function set_fan_mode(state){
+        play_sound();
+        const url = 'luna://com.nockanda3.app.service/set_fan_mode';
+        const params = {en:state};
+        default_bridge.onservicecallback = (msg) => {
+            //console.log(msg);
+            //let res = JSON.parse(msg);
+            //document.getElementById("txt_msg").innerHTML = res.Response;
+        };
+
+        default_bridge.call(url, JSON.stringify(params));
+}
+function set_fan_temp(){
+        play_sound();
+        const url = 'luna://com.nockanda3.app.service/set_fan_temp';
+        const params = {temp:document.getElementById("fan-set-value").value};
+        default_bridge.onservicecallback = (msg) => {
+            //console.log(msg);
+            //let res = JSON.parse(msg);
+            //document.getElementById("txt_msg").innerHTML = res.Response;
+        };
+
+        default_bridge.call(url, JSON.stringify(params));
+}
+function device1_register() {
+        const url = 'luna://com.nockanda3.app.service/read_register1';
+        const params = {};
+        dev1_rreg_bridge.onservicecallback = (msg) => {
+            //console.log(msg);
+            var data = JSON.parse(msg);
+            var reg_data = data.message.response._body._values;
+            document.getElementById("temperature").innerHTML= reg_data[0]/10.0 + "°C";    
+            document.getElementById("humidity").innerHTML = reg_data[1]/10.0 + "%";    
+            document.getElementById("co2-sensor").innerHTML = reg_data[2] + "ppm";    
+            document.getElementById("tvoc").innerHTML = reg_data[3] + "ppb";    
+            if(data.temp_en){
+                 document.getElementById("fan-mode").value = "설정";    
+            }else{
+                 document.getElementById("fan-mode").value = "해체";    
+            }
+            document.getElementById("fan-value").value = data.set_temp;    
+        };
+
+        dev1_rreg_bridge.call(url, JSON.stringify(params));
+}
+function device2_register() {
+        const url = 'luna://com.nockanda3.app.service/read_register2';
+        const params = {};
+        dev2_rreg_bridge.onservicecallback = (msg) => {
+            var data = JSON.parse(msg);
+            var reg_data = data.message.response._body._values;
+            document.getElementById("flow-rate").innerHTML = reg_data[0]/100.0 + "ml/s";  
+            if(reg_data[1] == 0){
+                document.getElementById("level").innerHTML = "부족"; 
+            }else{
+                document.getElementById("level").innerHTML = "적정"; 
+            }  
+            console.log(data.level_flag);
+        };
+
+        dev2_rreg_bridge.call(url, JSON.stringify(params));
+}
+
+function device0_coils(){
+        const url = 'luna://com.nockanda3.app.service/read_coils';
+        const params = {};
+        dev0_rcoil_bridge.onservicecallback = (msg) => {
+            var data = JSON.parse(msg);
+            var coils = data.message.response._body._valuesAsArray;
+            if(coils[0]){ 
+                //document.getElementById("coil1").value = "ON";
+                document.getElementById('myui_09').src = "images/myui_09_on.gif";
+            }else{
+                //document.getElementById("coil1").value = "OFF";
+                document.getElementById('myui_09').src = "images/myui_09.gif";
+            }
+            if(coils[1] == true && old_pump_state == false){ 
+                //document.getElementById("coil2").value = "ON";
+                document.getElementById('myui_12').src = "images/myui_12_on.gif";
+            }else if(coils[1] == false && old_pump_state == true){ 
+                //document.getElementById("coil2").value = "OFF";
+                document.getElementById('myui_12').src = "images/myui_12.gif";
+            }
+            old_pump_state = coils[1];
+            if(coils[2]){ 
+                //document.getElementById("coil3").value = "ON";
+                document.getElementById('myui_04').src = "images/myui_04_on.gif";
+            }else{
+                //document.getElementById("coil3").value = "OFF";
+                document.getElementById('myui_04').src = "images/myui_04.gif";
+            }
+            old_light_state = coils[2];
+            if(coils[3] == true && old_fan_state == false){ 
+                //document.getElementById("coil4").value = "ON";
+                document.getElementById('myui_11').src = "images/myui_11_on.gif";
+            }else if(coils[3] == false && old_fan_state == true){ 
+                //document.getElementById("coil4").value = "OFF";
+                document.getElementById('myui_11').src = "images/myui_11.gif";
+            }
+            old_fan_state = coils[3];
+        };
+
+        dev0_rcoil_bridge.call(url, JSON.stringify(params));
+}
+function read_data_stop(){
+        play_sound();
+       if(timer_id != null){
+            clearInterval(timer_id);
+            timer_id = null;
+        }
+        if(timer_id2 != null){
+            clearInterval(timer_id2);
+            timer_id2 = null;
+        }
+}
+function read_data(){
+        play_sound();
+        //원래 작동하던거 취소
+        if(timer_id != null){
+            clearInterval(timer_id);
+            timer_id = null;
+        }
+        if(timer_id2 != null){
+            clearInterval(timer_id2);
+            timer_id2 = null;
+        }
+        timer_id = setInterval(function () {
+              isconnected();
+        	device0_coils(); //bridge2
+              device0_register(); //bridge
+       }, 100);
+       timer_id2 = setInterval(function () {
+              device1_register();
+              device2_register();
+       }, 1000);
+}
+
+function play_sound(){
+        const url = 'luna://com.webos.service.audio/systemsounds/playFeedback';
+        const params = {name:"voicestart",sink:"pfeedback",play:true};
+        sound_bridge.call(url, JSON.stringify(params));
+}
+</script>
+</head>
+<body>
+    <div id="main-content">
+        <img id="open-modal-image" src="images/camera.png" width="80" height="80" alt="Open Modal" />
+
+        <!-- 모달 창 추가 -->
+        <div id="modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <img src="http://192.168.0.105:60000/video_feed" id="esp32cam" width="800" height="600" alt="Large Image" />
+            </div>
+        </div>
+        <!-- 배경삽입시작 -->
+        <div id="__01">
+            <div id="myui-01_">
+                <img id="myui_01" src="images/myui_01_on.gif" width="496" height="206" alt="" />
+            </div>
+            <div id="myui-02_">
+                <img id="myui_02" src="images/myui_02.gif" width="528" height="69" alt="" />
+            </div>
+            <div id="myui-03_">
+                <img id="myui_03" src="images/myui_03.gif" width="133" height="171" alt="" />
+            </div>
+            <div id="myui-04_">
+                <img id="myui_04" src="images/myui_04.gif" width="320" height="137" onClick="wrtie_coil(2,!old_light_state)" alt="" />
+            </div>
+            <div id="myui-05_">
+                <img id="myui_05" src="images/myui_05.gif" width="75" height="531" alt="" />
+            </div>
+            <div id="myui-06_">
+                <img id="myui_06" src="images/myui_06.gif" width="496" height="34" alt="" />
+            </div>
+            <div id="myui-07_">
+                <img id="myui_07" src="images/myui_07.gif" width="320" height="104" alt="" />
+            </div>
+            <div id="myui-08_">
+                <img id="myui_08" src="images/myui_08.gif" width="180" height="129" alt="" />
+            </div>
+            <div id="myui-09_">
+                <img id="myui_09" src="images/myui_09.gif" width="150" height="129" alt="" />
+            </div>
+            <div id="myui-10_">
+                <img id="myui_10" src="images/myui_10.gif" width="138" height="129" alt="" />
+            </div>
+            <div id="myui-11_">
+                <img id="myui_11" src="images/myui_11.gif" width="161" height="151" onClick="wrtie_coil(3,!old_fan_state)" alt="" />
+            </div>
+            <div id="myui-12_">
+                <img id="myui_12" src="images/myui_12.gif" width="294" onClick="wrtie_coil(1,!old_pump_state)" height="119" alt="" />
+            </div>
+            <div id="myui-13_">
+                <img id="myui_13" src="images/myui_13.gif" width="26" height="290" alt="" />
+            </div>
+            <div id="myui-14_">
+                <img id="myui_14" src="images/myui_14.gif" width="59" height="231" alt="" />
+            </div>
+            <div id="myui-15_">
+                <img id="myui_15" src="images/myui_15.gif" width="193" height="161" onClick="task_run()" alt="" />
+            </div>
+            <div id="myui-16_">
+                <img id="myui_16" src="images/myui_16.gif" width="198" height="161" onClick="task_stop()" alt="" />
+            </div>
+            <div id="myui-17_">
+                <img id="myui_17" src="images/myui_17.gif" width="18" height="231" alt="" />
+            </div>
+            <div id="myui-18_">
+                <img id="myui_18" src="images/myui_18.gif" width="161" height="209" alt="" />
+            </div>
+            <div id="myui-19_">
+                <img id="myui_19" src="images/myui_19.gif" width="294" height="171" alt="" />
+            </div>
+            <div id="myui-20_">
+                <img id="myui_20" src="images/myui_20.gif" width="391" height="70" alt="" />
+            </div>
+        </div>
+        <!-- 배경삽입종료 -->
+<!-- Container for displaying sensor data -->
+<div id="container" class="container">
+    <p id="current-time">2024-08-03 12:34:56</p>
+    <div class="data">
+        <div class="data-item">
+            <span class="label">대기온:</span>
+            <span id="temperature" class="value">11.22 °C</span>
+            <span class="label">상대습도:</span>
+            <span id="humidity" class="value">33.44 %</span>
+        </div>
+        <div class="data-item">
+            <span class="label">TVOC:</span>
+            <span id="tvoc" class="value">1234 ppb</span>
+            <span class="label">CO2농도:</span>
+            <span id="co2-sensor" class="value">1234 ppm</span>
+        </div>
+        <div class="data-item">
+            <span class="label">유량:</span>
+            <span id="flow-rate" class="value">12.34 ml/s</span>
+            <span class="label">수위:</span>
+            <span id="level" class="value">부족</span>
+        </div>
+    </div>
+</div>
+
+
+<div id="side-menu">
+    <button class="close-button">&times; 닫기</button>
+    <h2>컨트롤 패널</h2>
+    <div class="time-inputs">
+        장비 연결 상태
+    </div>
+    <div class="time-inputs">
+        <label for="device0_state" style="width: 12%;">PLC:</label>
+        <input type="text" value=연결안됨 id="device0_state" style="width: 18%; text-align: right;" readonly>
+        <label for="device1_state" style="width: 17%;text-align: right;">환경모듈:</label>
+        <input type="text" value=연결안됨 id="device1_state" style="width: 18%; text-align: right;" readonly>
+        <label for="device2_state" style="width: 17%;text-align: right;">펌프모듈:</label>
+        <input type="text" value=연결안됨 id="device2_state" style="width: 18%; text-align: right;" readonly>
+    </div>
+    <div class="time-inputs">
+        <button class="side-menu-button" onClick="connect()" style="width: 40%;">전체 재접속</button>
+        <button class="side-menu-button" onClick="read_data()" style="width: 30%;">통신시작</button>
+        <button class="side-menu-button" onClick="read_data_stop()" style="width: 30%;">통신종료</button>
+    </div>
+    <div class="time-inputs">
+        현재 PLC 펌프 자동화 설정값(단위: 초)
+    </div>
+    <div class="time-inputs">
+        <label for="pump-on-time" style="width: 25%;">ON 유지시간:</label>
+        <input type="text" value=0 id="pump-on-time" style="width: 25%; text-align: right;" readonly>
+        <label for="pump-off-time" style="width: 25%;text-align: right;">OFF 유지시간:</label>
+        <input type="text" value=0 id="pump-off-time" style="width: 25%; text-align: right;" readonly>
+    </div>
+    <div class="time-inputs">
+        PLC 펌프 자동화 설정값 업데이트(단위: 초)
+    </div>
+    <div class="time-inputs">
+        <label for="pump-on-set" style="width: 20%;">ON 유지:</label>
+        <input type="number" value=0 id="pump-on-set" style="width: 15%; text-align: right;">
+        <button class="side-menu-button" onClick="set_on_t()" style="width: 15%;">설정</button>
+        <label for="pump-off-set" style="width: 20%;text-align: right;">OFF 유지:</label>
+        <input type="number" value=0 id="pump-off-set" style="width: 15%; text-align: right;">
+        <button class="side-menu-button" onClick="set_off_t()" style="width: 15%;">설정</button>
+    </div>
+    <div class="time-inputs">
+        환기팬 자동화 설정
+    </div>
+    <div class="time-inputs">
+        <label for="fan-mode" style="width: 20%;">설정여부:</label>
+        <input type="text" value="중지" id="fan-mode" style="width: 20%; text-align: right;" readonly>
+        <label for="fan-value" style="width: 10%;text-align: right;">기준값:</label>
+        <input type="number" value="0" id="fan-value" style="width: 10%; text-align: right;" readonly>
+        <label for="fan-value" style="width: 10%;text-align: right;">설정값:</label>
+        <input type="number" value="0" id="fan-set-value" style="width: 10%; text-align: right;">
+        <button class="side-menu-button" onClick="set_fan_temp()" style="width: 20%;">설정</button>
+    </div>
+    <div class="time-inputs">
+        <button class="side-menu-button" onClick="set_fan_mode(true)" style="width: 50%;">자동화 시작</button>
+        <button class="side-menu-button" onClick="set_fan_mode(false)" style="width: 50%;">자동화 중지</button>
+    </div>
+    <div class="time-inputs">
+        <label for="light-set-value" style="width: 30%;">식물조명:</label>
+        <input type="number" value="0" id="light-set-value" style="width: 30%; text-align: right;">
+        <button class="side-menu-button" id="light-auto-button" onClick="light_control()" style="width: 40%;">초 작동후 꺼짐</button>
+    </div>
+</div>
+    <button id="hamburger-button">&#9776; 설정</button>
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,407 @@
+/* General Body Styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f0f4f8;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* Main Content Area */
+#main-content {
+    position: relative;
+    width: 1024px;
+    height: 600px;
+    overflow: hidden;
+}
+
+/* Background Image */
+#background-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -1; /* Place the image behind other content */
+}
+
+/* Hamburger Button */
+#hamburger-button {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    font-size: 30px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    z-index: 2; /* Ensure the button is above the background image */
+    transition: opacity 0.3s ease;
+}
+
+/* Side Menu */
+#side-menu {
+    position: fixed;
+    top: 0;
+    left: -100%; /* Hide side menu off-screen by default */
+    width: 50%;
+    height: 100%;
+    background-color: #333;
+    color: white;
+    padding: 20px;
+    box-shadow: 3px 0 5px rgba(0, 0, 0, 0.2);
+    transition: left 0.3s ease;
+    z-index: 1; /* Ensure side menu is below the hamburger button */
+    overflow-y: auto; /* Add vertical scrollbar if content overflows */
+}
+
+#side-menu.show {
+    left: 0; /* Show side menu when class 'show' is added */
+}
+
+#side-menu .close-button {
+    font-size: 30px;
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    position: absolute;
+    top: 20px;
+    right: 20px;
+}
+
+#side-menu h2 {
+    margin-top: 0;
+}
+
+#side-menu .time-inputs {
+    display: flex; /* Use flexbox to align items horizontally */
+    align-items: center; /* Center items vertically */
+    gap: 15px; /* Space between elements */
+    margin-top: 10px;
+}
+
+#side-menu .time-inputs label {
+    display: block;
+    margin-bottom: 10px;
+    color: #ddd;
+}
+
+#side-menu .time-inputs input {
+    width: calc(100% - 22px);
+    padding: 5px;
+    margin-bottom: 5px;
+    border: none;
+    border-radius: 5px;
+    background-color: #444;
+    color: white;
+    font-size: 16px;
+}
+
+#side-menu .time-inputs input:focus {
+    outline: none;
+    background-color: #555;
+}
+
+/* Container */
+.container {
+    position: absolute;
+    top: 450px; /* Vertical position */
+    left: 468px; /* Horizontal position */
+    width: 556px; /* Width of container */
+    height: 150px; /* Height of container */
+    background: rgba(0, 0, 0, 0.5); /* Black background with 50% opacity */
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 5px; /* Adjust padding to fit content */
+    box-sizing: border-box; /* Include padding and border in element's total width and height */
+    overflow: hidden; /* Hide overflow to fit within the container */
+    display: flex; /* Use flexbox for alignment */
+    flex-direction: column; /* Stack items vertically */
+    z-index: 1; /* Ensure the container is above the background but below other elements like side menu */
+}
+
+/* Data Item */
+.data-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0; /* Adjust padding to fit within container */
+    border-bottom: 1px solid #444; /* Slightly lighter border for better visibility */
+}
+
+.label {
+    width: 100px;
+    font-weight: bold;
+    font-size: 20px; /* Adjust font size */
+    color: #ffffff; /* White text color */
+}
+
+.value {
+    width: 100px;
+    font-weight: bold;
+    color: #00bcd4; /* Light cyan color for value */
+    font-size: 20px; /* Adjust font size */
+}
+
+/* Current Time */
+#current-time {
+    font-size: 14px; /* Adjust font size */
+    color: #ffffff; /* White text color */
+    text-align: right; /* Right-align text */
+    margin: 5px 0; /* Add margin for spacing */
+    flex-shrink: 0; /* Prevent shrinking */
+}
+
+/* Side Menu Button */
+.side-menu-button {
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center; /* Vertically center align button text */
+    justify-content: center; /* Horizontally center align button text */
+}
+
+.side-menu-button:hover {
+    background-color: #0056b3;
+    transform: scale(1.05);
+}
+
+.side-menu-button:active {
+    background-color: #003d7a;
+    transform: scale(1);
+}
+
+/* Hamburger Button */
+#hamburger-button {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    font-size: 30px;
+    background: none;
+    border: none;
+    color: white; /* 버튼 색상을 하얀색으로 변경 */
+    cursor: pointer;
+    z-index: 2; /* Ensure the button is above the background image */
+    transition: opacity 0.3s ease;
+}
+
+
+
+/* 배경 이미지 관련 스타일 */
+#__01 {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    width: 1024px;
+    height: 600px;
+}
+
+#myui-01_ {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    width: 496px;
+    height: 206px;
+}
+
+#myui-02_ {
+    position: absolute;
+    left: 496px;
+    top: 0px;
+    width: 528px;
+    height: 69px;
+}
+
+#myui-03_ {
+    position: absolute;
+    left: 496px;
+    top: 69px;
+    width: 133px;
+    height: 171px;
+}
+
+#myui-04_ {
+    position: absolute;
+    left: 629px;
+    top: 69px;
+    width: 320px;
+    height: 137px;
+}
+
+#myui-05_ {
+    position: absolute;
+    left: 949px;
+    top: 69px;
+    width: 75px;
+    height: 531px;
+}
+
+#myui-06_ {
+    position: absolute;
+    left: 0px;
+    top: 206px;
+    width: 496px;
+    height: 34px;
+}
+
+#myui-07_ {
+    position: absolute;
+    left: 629px;
+    top: 206px;
+    width: 320px;
+    height: 104px;
+}
+
+#myui-08_ {
+    position: absolute;
+    left: 0px;
+    top: 240px;
+    width: 180px;
+    height: 129px;
+}
+
+#myui-09_ {
+    position: absolute;
+    left: 180px;
+    top: 240px;
+    width: 150px;
+    height: 129px;
+}
+
+#myui-10_ {
+    position: absolute;
+    left: 330px;
+    top: 240px;
+    width: 138px;
+    height: 129px;
+}
+
+#myui-11_ {
+    position: absolute;
+    left: 468px;
+    top: 240px;
+    width: 161px;
+    height: 151px;
+}
+
+#myui-12_ {
+    position: absolute;
+    left: 629px;
+    top: 310px;
+    width: 294px;
+    height: 119px;
+}
+
+#myui-13_ {
+    position: absolute;
+    left: 923px;
+    top: 310px;
+    width: 26px;
+    height: 290px;
+}
+
+#myui-14_ {
+    position: absolute;
+    left: 0px;
+    top: 369px;
+    width: 59px;
+    height: 231px;
+}
+
+#myui-15_ {
+    position: absolute;
+    left: 59px;
+    top: 369px;
+    width: 193px;
+    height: 161px;
+}
+
+#myui-16_ {
+    position: absolute;
+    left: 252px;
+    top: 369px;
+    width: 198px;
+    height: 161px;
+}
+
+#myui-17_ {
+    position: absolute;
+    left: 450px;
+    top: 369px;
+    width: 18px;
+    height: 231px;
+}
+
+#myui-18_ {
+    position: absolute;
+    left: 468px;
+    top: 391px;
+    width: 161px;
+    height: 209px;
+}
+
+#myui-19_ {
+    position: absolute;
+    left: 629px;
+    top: 429px;
+    width: 294px;
+    height: 171px;
+}
+
+#myui-20_ {
+    position: absolute;
+    left: 59px;
+    top: 530px;
+    width: 391px;
+    height: 70px;
+}
+
+/* 모달을 여는 작은 이미지 위치 설정 */
+#open-modal-image {
+    position: absolute;
+    top: 10px; /* 상단 여백 */
+    right: 10px; /* 우측 여백 */
+    cursor: pointer;
+    z-index: 3; /* 다른 요소 위에 오버랩되도록 */
+}
+
+/* 모달 기본 스타일 */
+.modal {
+    display: none; /* 기본적으로 숨김 */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8); /* 반투명 검은 배경 */
+    z-index: 4; /* 최상단에 위치 */
+}
+
+/* 모달 내용 정렬 및 스타일 */
+.modal-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* 가운데 정렬 */
+    width: 800px;
+    height: 600px;
+}
+
+/* 모달 닫기 버튼 스타일 */
+.modal .close {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 40px;
+    color: white;
+    cursor: pointer;
+}

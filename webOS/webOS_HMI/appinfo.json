@@ -1,0 +1,18 @@
+{
+  "id": "com.nockanda3.app",
+  "version": "1.0.0",
+  "vendor": "SIMSIMHAN NOCKANDA",
+  "type": "web",
+  "main": "index.html",
+  "title": "webOS SmartFarm HMI",
+  "icon": "icon.png",
+  "largeIcon": "largeIcon.png",
+  "requiredPermissions": [
+    "all",
+    "notification.operation",
+    "systemsettings.management",
+    "alarm.operation",
+    "application.launcher",
+    "audio.management"
+  ]
+}
